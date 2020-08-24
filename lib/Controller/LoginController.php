@@ -23,6 +23,7 @@ namespace OCA\LoginViaPost\Controller;
 
 use OC\Authentication\Login\Chain;
 use OC\Authentication\TwoFactorAuth\Manager;
+use OC\Authentication\WebAuthn\Manager as WebAuthnManager;
 use OCA\LoginViaPost\Request;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\RedirectResponse;
@@ -52,6 +53,8 @@ class LoginController extends Controller {
 	private $logger;
 	/** @var Manager */
 	private $twoFactorAuthManager;
+	/** @var WebAuthnManager */
+	private $webAuthnManager;
 
 	public function __construct($appName,
 								IRequest $request,
@@ -61,7 +64,8 @@ class LoginController extends Controller {
 								IConfig $config,
 								ISession $session,
 								ILogger $logger,
-								Manager $twoFactorAuthManager) {
+								Manager $twoFactorAuthManager,
+				   				WebAuthnManager $webAuthnManager) {
 		parent::__construct($appName, $request);
 		$this->urlGenerator = $urlGenerator;
 		$this->userSession = $userSession;
@@ -70,6 +74,7 @@ class LoginController extends Controller {
 		$this->session = $session;
 		$this->logger = $logger;
 		$this->twoFactorAuthManager = $twoFactorAuthManager;
+		$this->webAuthnManager = $webAuthnManager;
 	}
 
 	private function getMockedRequest() {
@@ -117,7 +122,8 @@ class LoginController extends Controller {
 			\OC::$server->query(Defaults::class),
 			\OC::$server->getBruteForceThrottler(),
 			\OC::$server->query(Chain::class),
-			\OC::$server->query(IInitialStateService::class)
+			\OC::$server->query(IInitialStateService::class),
+			$this->webAuthnManager
 		);
 
 		return $loginController->tryLogin($username, $password, '');
